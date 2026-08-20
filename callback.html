@@ -15,13 +15,67 @@
   <div class="container">
     <main>
       <p>This page is the OAuth callback endpoint for the tldr-post automation
-        app. If you arrived here after authorizing, copy the URL from your
-        browser's address bar and paste it into the setup script.</p>
-      <p id="params"></p>
+        app. If you arrived here after authorizing, the authorization code has
+        been extracted below. Copy it and paste it into the setup script.</p>
+
+      <h2>Authorization code</h2>
+      <p><strong id="status">Extracting parameters…</strong></p>
+      <textarea id="code-box" rows="4" readonly></textarea>
+      <p><button type="button" id="copy-btn">Copy code</button></p>
+      <p id="copied" style="color:#1a7f37;font-weight:600;display:none">Copied!</p>
+
+      <h2>Other parameters</h2>
+      <ul id="params"></ul>
     </main>
   </div>
   <footer class="site-footer">
     <p>&copy; 2026 tldr-post. All rights reserved.</p>
   </footer>
+
+  <script>
+    (function () {
+      var params = new URLSearchParams(window.location.search);
+      var code = params.get("code");
+      var box = document.getElementById("code-box");
+      var status = document.getElementById("status");
+      var paramsList = document.getElementById("params");
+
+      if (code) {
+        box.value = code;
+        status.textContent = "Authorization code found. Copy it below.";
+        box.style.display = "block";
+        document.getElementById("copy-btn").style.display = "inline-block";
+      } else {
+        status.textContent = "No code in the URL. Did you arrive here directly?";
+        box.style.display = "none";
+        document.getElementById("copy-btn").style.display = "none";
+      }
+
+      var any = false;
+      params.forEach(function (value, key) {
+        if (key === "code") return;
+        any = true;
+        var li = document.createElement("li");
+        li.textContent = key + " = " + value;
+        paramsList.appendChild(li);
+      });
+      if (!any) {
+        var li = document.createElement("li");
+        li.textContent = "(none)";
+        paramsList.appendChild(li);
+      }
+
+      document.getElementById("copy-btn").addEventListener("click", function () {
+        box.select();
+        box.setSelectionRange(0, box.value.length);
+        navigator.clipboard.writeText(box.value).then(function () {
+          document.getElementById("copied").style.display = "inline";
+          setTimeout(function () {
+            document.getElementById("copied").style.display = "none";
+          }, 2000);
+        });
+      });
+    })();
+  </script>
 </body>
 </html>
